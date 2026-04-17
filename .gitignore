@@ -1,7 +1,12 @@
 __pycache__/
 *.pyc
 .venv/
-.streamlit/
+.streamlit/secrets.toml
 outputs/*.jsonl
 outputs/*.md
 !outputs/generated_wiki.md
+outputs/speech/
+node_modules/
+package.json
+package-lock.json
+take_screenshots.js

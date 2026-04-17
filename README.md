@@ -476,8 +476,6 @@ The sidebar is always visible and provides quick access to workspace-wide action
 | **Speech Lab** | TTS and STT | 5 voice presets, prompt-audio conditioning, 14 language support, one-click "read output" |
 | **Operations and Snapshots** | Audit and evidence | Artifact browser (MD + WAV), log inspector, snapshot center, workspace summary |
 
-![Original workspace UI](docs/snapshots/07_streamlit_ui.png)
-
 ---
 
 ### Snapshot Index
@@ -492,7 +490,7 @@ All evidence artifacts are stored in `docs/snapshots/`. Each is referenced inlin
 | 04 | [04_e2e_output_preview.md](docs/snapshots/04_e2e_output_preview.md) | Generated markdown output |
 | 05 | [05_streamlit_startup.txt](docs/snapshots/05_streamlit_startup.txt) | Streamlit startup log |
 | 06 | [06_agent_log_last_run.json](docs/snapshots/06_agent_log_last_run.json) | Agent log JSONL entry |
-| 07 | [07_streamlit_ui.png](docs/snapshots/07_streamlit_ui.png) | Original workspace UI |
+| 07 | [07_streamlit_ui.png](docs/snapshots/07_streamlit_ui.png) | Legacy UI (pre-redesign) |
 | 08 | [08_e2e_speech_validation.json](docs/snapshots/08_e2e_speech_validation.json) | CLI e2e speech validation |
 | 09 | [09_ui_smoke_test.json](docs/snapshots/09_ui_smoke_test.json) | UI-triggered smoke test |
 | 10 | [10_ui_command_center.png](docs/snapshots/10_ui_command_center.png) | Command Center tab |
@@ -500,6 +498,7 @@ All evidence artifacts are stored in `docs/snapshots/`. Each is referenced inlin
 | 12 | [12_ui_speech_lab.png](docs/snapshots/12_ui_speech_lab.png) | Speech Lab tab |
 | 13 | [13_ui_operations_snapshots.png](docs/snapshots/13_ui_operations_snapshots.png) | Operations and Snapshots tab |
 | 14 | [14_e2e_workspace_validation.json](docs/snapshots/14_e2e_workspace_validation.json) | Latest e2e workspace validation |
+| 15 | [15_ui_sidebar.png](docs/snapshots/15_ui_sidebar.png) | Sidebar with workspace readiness and controls |
 
 ## Configuration
 
