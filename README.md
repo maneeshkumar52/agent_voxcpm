@@ -11,7 +11,7 @@ Production-ready local AI system where specialized agents collaborate on knowled
 - Multi-agent orchestration for content generation
 - VoxCPM multilingual TTS
 - FunASR (SenseVoice) multilingual STT
-- Streamlit workspace with orchestration, speech studio, and artifacts
+- Streamlit production-style workspace with command center, orchestration studio, speech lab, and operations console
 
 ## Table of Contents
 
@@ -131,7 +131,13 @@ ollama pull gemma3:4b
 streamlit run app.py
 ```
 
-After launch, use the sidebar action `Run Full Workspace Smoke Test` to execute a full orchestrator + STT/TTS verification path from the UI.
+After launch:
+
+1. Start in `Command Center` for readiness and quick actions.
+2. Use `Agent Studio` for authoring tasks and reviewing handoff traces.
+3. Use `Speech Lab` for STT, TTS, and optional prompt-audio voice conditioning.
+4. Use `Operations and Snapshots` to inspect outputs, logs, and saved evidence.
+5. Use sidebar `Run full workspace smoke test` to execute full orchestrator + STT/TTS verification from the UI.
 
 ### Programmatic E2E Validation
 
@@ -148,14 +154,21 @@ python scripts/e2e_validate.py --speech-text "Hello world. This is VoxCPM multil
 3. Final markdown appears in UI.
 4. Artifacts are persisted to `outputs/` and `outputs/agent_logs.jsonl`.
 
-### Flow B: Speech Studio
+### Flow B: Speech Lab
 
-1. User uploads audio in `Speech Studio` and runs STT.
+1. User uploads audio in `Speech Lab` and runs STT.
 2. Transcript is produced via SenseVoice and can be reused as TTS input.
 3. User enters/edits text and generates multilingual speech with VoxCPM.
 4. WAV output is playable and downloadable in the UI.
 
-### Flow C: Unified Validation
+### Flow C: Production Workspace Operations
+
+1. `Command Center` shows capability matrix, latest validation JSON, and workflow shortcuts.
+2. `Agent Studio` includes run history, metadata panel, markdown export, and full agent handoff trace.
+3. `Speech Lab` adds voice presets plus optional prompt-audio and prompt-text conditioning.
+4. `Operations and Snapshots` provides artifact browser, log inspector, and snapshot center.
+
+### Flow D: Unified Validation
 
 1. `scripts/e2e_validate.py` runs orchestration.
 2. Script runs VoxCPM TTS.
@@ -174,7 +187,7 @@ What it does:
 2. Generates speech with VoxCPM.
 3. Transcribes the generated speech with FunASR.
 4. Persists a UI-triggered validation summary to `docs/snapshots/09_ui_smoke_test.json`.
-5. Displays the latest smoke test result in the `Artifacts and Logs` tab.
+5. Displays the latest smoke test result in `Command Center` and `Operations and Snapshots`.
 
 ## End-to-End Validation
 
@@ -200,8 +213,17 @@ Validation artifact:
 - Updated UI screenshot: [docs/snapshots/07_streamlit_ui.png](docs/snapshots/07_streamlit_ui.png)
 - Speech-enabled e2e summary: [docs/snapshots/08_e2e_speech_validation.json](docs/snapshots/08_e2e_speech_validation.json)
 - UI-triggered smoke test summary: [docs/snapshots/09_ui_smoke_test.json](docs/snapshots/09_ui_smoke_test.json)
+- Command Center view: [docs/snapshots/10_ui_command_center.png](docs/snapshots/10_ui_command_center.png)
+- Agent Studio view: [docs/snapshots/11_ui_agent_studio.png](docs/snapshots/11_ui_agent_studio.png)
+- Speech Lab view: [docs/snapshots/12_ui_speech_lab.png](docs/snapshots/12_ui_speech_lab.png)
+- Operations and Snapshots view: [docs/snapshots/13_ui_operations_snapshots.png](docs/snapshots/13_ui_operations_snapshots.png)
+- Upgraded workspace e2e summary: [docs/snapshots/14_e2e_workspace_validation.json](docs/snapshots/14_e2e_workspace_validation.json)
 
 ![Workspace UI](docs/snapshots/07_streamlit_ui.png)
+![Command Center UI](docs/snapshots/10_ui_command_center.png)
+![Agent Studio UI](docs/snapshots/11_ui_agent_studio.png)
+![Speech Lab UI](docs/snapshots/12_ui_speech_lab.png)
+![Operations UI](docs/snapshots/13_ui_operations_snapshots.png)
 
 ## Configuration
 
