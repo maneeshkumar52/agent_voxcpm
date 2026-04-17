@@ -172,6 +172,11 @@ The following artifacts were captured from live execution on April 18, 2026.
 - Final output preview: [docs/snapshots/04_e2e_output_preview.md](docs/snapshots/04_e2e_output_preview.md)
 - Streamlit startup snapshot: [docs/snapshots/05_streamlit_startup.txt](docs/snapshots/05_streamlit_startup.txt)
 - Latest agent log record: [docs/snapshots/06_agent_log_last_run.json](docs/snapshots/06_agent_log_last_run.json)
+- Streamlit UI screenshot: [docs/snapshots/07_streamlit_ui.png](docs/snapshots/07_streamlit_ui.png)
+
+### UI Snapshot
+
+![Streamlit Multi-Agent UI](docs/snapshots/07_streamlit_ui.png)
 
 ### Validation Checklist
 
