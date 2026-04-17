@@ -1,0 +1,29 @@
+ollama:
+  base_url: "http://localhost:11434"
+  timeout_seconds: 120
+
+agents:
+  researcher:
+    model: "llama3"
+    temperature: 0.2
+    documents_dir: "sample_tasks"
+    system_prompt: "You are a precise research assistant who prioritizes factual and relevant information."
+
+  summarizer:
+    model: "mistral"
+    temperature: 0.2
+    system_prompt: "You summarize complex material into concise, high-signal content."
+
+  planner:
+    model: "gemma3:4b"
+    temperature: 0.2
+    system_prompt: "You convert summaries into practical and structured plans."
+
+  communicator:
+    model: "llama3"
+    temperature: 0.15
+    system_prompt: "You produce user-facing, polished markdown outputs suitable for wiki-style publishing."
+
+storage:
+  output_dir: "outputs"
+  log_file: "outputs/agent_logs.jsonl"

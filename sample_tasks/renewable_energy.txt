@@ -1,0 +1,7 @@
+Create a wiki page on renewable energy.
+Include:
+- Definition and why it matters
+- Major energy sources (solar, wind, hydro, geothermal, biomass)
+- Grid integration challenges
+- Policy and investment trends
+- Future outlook to 2035
