@@ -11,9 +11,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from orchestrator import VoxCPMOrchestrator
-from speech import SpeechServiceError, VoxSpeechService
-from utils import load_config
+from smoke_test import run_workspace_smoke_test
 
 
 def parse_args() -> argparse.Namespace:
@@ -43,59 +41,13 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
-    cfg = load_config("config.yaml")
-
-    summary: dict[str, object] = {
-        "task": args.task,
-        "language": args.language,
-    }
-
-    orchestrator = VoxCPMOrchestrator("config.yaml")
-    result = orchestrator.run(args.task)
-    summary["orchestrator"] = {
-        "backend": result.backend,
-        "messages": len(result.messages),
-        "output_file": result.output_file,
-    }
-
-    speech = VoxSpeechService(cfg)
-    dep = speech.dependency_status()
-    summary["speech_dependency_status"] = {
-        "voxcpm": dep.voxcpm_available,
-        "funasr": dep.funasr_available,
-        "soundfile": dep.soundfile_available,
-        "tts_ready": dep.ready_for_tts,
-        "stt_ready": dep.ready_for_stt,
-    }
-
-    if dep.ready_for_tts:
-        try:
-            tts = speech.synthesize(text=args.speech_text, language=args.language)
-            summary["speech_tts"] = {"status": "ok", **tts}
-
-            if dep.ready_for_stt:
-                stt = speech.transcribe(tts["audio_path"], language=args.language)
-                summary["speech_stt"] = {
-                    "status": "ok",
-                    "transcript": stt.get("transcript", ""),
-                    "model": stt.get("model", ""),
-                }
-            else:
-                summary["speech_stt"] = {
-                    "status": "skipped",
-                    "reason": "funasr dependency not available",
-                }
-        except SpeechServiceError as exc:
-            summary["speech_tts"] = {"status": "error", "error": str(exc)}
-    else:
-        summary["speech_tts"] = {
-            "status": "skipped",
-            "reason": "voxcpm/soundfile dependency not available",
-        }
-
-    snapshot_path = Path(args.snapshot)
-    snapshot_path.parent.mkdir(parents=True, exist_ok=True)
-    snapshot_path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+    summary = run_workspace_smoke_test(
+        config_path="config.yaml",
+        task=args.task,
+        speech_text=args.speech_text,
+        language=args.language,
+        snapshot_path=args.snapshot,
+    )
 
     print(json.dumps(summary, indent=2))
     return 0

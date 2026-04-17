@@ -1,0 +1,29 @@
+{
+  "task": "Create a concise wiki page on renewable energy in 5 sections.",
+  "language": "auto",
+  "orchestrator": {
+    "backend": "voxcpm",
+    "messages": 5,
+    "output_file": "outputs/create-a-concise-wiki-page-on-renewable-energy-in-5-sections-20260417T194040Z.md"
+  },
+  "speech_dependency_status": {
+    "voxcpm": true,
+    "funasr": true,
+    "soundfile": true,
+    "tts_ready": true,
+    "stt_ready": true
+  },
+  "speech_tts": {
+    "status": "ok",
+    "audio_path": "outputs/speech/tts-hello-world-this-is-the-ui-smoke-test-verification-20260417T194324Z.wav",
+    "sample_rate": 48000,
+    "duration_seconds": 4.16,
+    "language": "auto",
+    "model": "openbmb/VoxCPM2"
+  },
+  "speech_stt": {
+    "status": "ok",
+    "transcript": "Hello world, this is the UI S test verification run.",
+    "model": "iic/SenseVoiceSmall"
+  }
+}

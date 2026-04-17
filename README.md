@@ -21,6 +21,7 @@ Production-ready local AI system where specialized agents collaborate on knowled
 - [Setup](#setup)
 - [Run](#run)
 - [Functional Flows](#functional-flows)
+- [One-Click Smoke Test](#one-click-smoke-test)
 - [End-to-End Validation](#end-to-end-validation)
 - [Snapshots](#snapshots)
 - [Configuration](#configuration)
@@ -130,6 +131,8 @@ ollama pull gemma3:4b
 streamlit run app.py
 ```
 
+After launch, use the sidebar action `Run Full Workspace Smoke Test` to execute a full orchestrator + STT/TTS verification path from the UI.
+
 ### Programmatic E2E Validation
 
 ```bash
@@ -159,6 +162,20 @@ python scripts/e2e_validate.py --speech-text "Hello world. This is VoxCPM multil
 3. Script runs FunASR STT on generated WAV.
 4. Summary is persisted in `docs/snapshots/08_e2e_speech_validation.json`.
 
+## One-Click Smoke Test
+
+The Streamlit sidebar includes a single action button:
+
+- `Run Full Workspace Smoke Test`
+
+What it does:
+
+1. Runs the multi-agent orchestrator on a fixed validation task.
+2. Generates speech with VoxCPM.
+3. Transcribes the generated speech with FunASR.
+4. Persists a UI-triggered validation summary to `docs/snapshots/09_ui_smoke_test.json`.
+5. Displays the latest smoke test result in the `Artifacts and Logs` tab.
+
 ## End-to-End Validation
 
 Last validated with real dependency execution:
@@ -182,6 +199,7 @@ Validation artifact:
 - Agent log sample: [docs/snapshots/06_agent_log_last_run.json](docs/snapshots/06_agent_log_last_run.json)
 - Updated UI screenshot: [docs/snapshots/07_streamlit_ui.png](docs/snapshots/07_streamlit_ui.png)
 - Speech-enabled e2e summary: [docs/snapshots/08_e2e_speech_validation.json](docs/snapshots/08_e2e_speech_validation.json)
+- UI-triggered smoke test summary: [docs/snapshots/09_ui_smoke_test.json](docs/snapshots/09_ui_smoke_test.json)
 
 ![Workspace UI](docs/snapshots/07_streamlit_ui.png)
 

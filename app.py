@@ -8,6 +8,7 @@ from pathlib import Path
 import streamlit as st
 
 from orchestrator import VoxCPMOrchestrator
+from smoke_test import run_workspace_smoke_test
 from speech import SpeechServiceError, VoxSpeechService
 from utils import load_config
 
@@ -90,7 +91,7 @@ st.markdown(
     """
 <div class="hero">
   <p class="hero-title">VoxCPM Multi-Agent Workspace</p>
-  <p class="hero-sub">Orchestrator + multilingual speech studio (VoxCPM TTS and SenseVoice STT) in one local-first interface.</p>
+  <p class="hero-sub">Orchestrator plus multilingual speech studio with one-click smoke testing and local-first artifacts.</p>
 </div>
 """,
     unsafe_allow_html=True,
@@ -99,6 +100,18 @@ st.markdown(
 config = load_config("config.yaml")
 speech_service = VoxSpeechService(config)
 speech_status = speech_service.dependency_status()
+
+if "task_text" not in st.session_state:
+    st.session_state["task_text"] = "Create a wiki page on renewable energy with key technologies and future outlook."
+
+if "last_result" not in st.session_state:
+    st.session_state["last_result"] = None
+
+if "last_transcript" not in st.session_state:
+    st.session_state["last_transcript"] = ""
+
+if "smoke_test_result" not in st.session_state:
+    st.session_state["smoke_test_result"] = None
 
 with st.sidebar:
     st.header("Workspace Controls")
@@ -121,18 +134,26 @@ with st.sidebar:
             "soundfile": speech_status.soundfile_available,
         }
     )
-
     if not speech_status.ready_for_tts or not speech_status.ready_for_stt:
         st.caption("Install optional speech dependencies for full multilingual STT/TTS support.")
 
-if "task_text" not in st.session_state:
-    st.session_state["task_text"] = "Create a wiki page on renewable energy with key technologies and future outlook."
+    st.divider()
+    st.subheader("One-Click Smoke Test")
+    if st.button("Run Full Workspace Smoke Test", use_container_width=True):
+        with st.spinner("Running orchestrator plus multilingual STT/TTS smoke test..."):
+            try:
+                st.session_state["smoke_test_result"] = run_workspace_smoke_test(
+                    config_path="config.yaml",
+                    task="Create a concise wiki page on renewable energy in 5 sections.",
+                    speech_text="Hello world. This is VoxCPM multilingual speech verification.",
+                    language="auto",
+                    snapshot_path="docs/snapshots/09_ui_smoke_test.json",
+                )
+            except Exception as exc:
+                st.error(f"Smoke test failed: {exc}")
+            else:
+                st.success("Smoke test completed and snapshot refreshed.")
 
-if "last_result" not in st.session_state:
-    st.session_state["last_result"] = None
-
-if "last_transcript" not in st.session_state:
-    st.session_state["last_transcript"] = ""
 
 tab_orchestrator, tab_speech, tab_artifacts = st.tabs(["Multi-Agent Orchestrator", "Speech Studio", "Artifacts and Logs"])
 
@@ -145,20 +166,18 @@ with tab_orchestrator:
         placeholder="Example: Create a multilingual wiki article on renewable energy with citations and a concise conclusion.",
     )
 
-    run_clicked = st.button("Run Multi-Agent Workflow", type="primary", use_container_width=True)
-    if run_clicked:
+    if st.button("Run Multi-Agent Workflow", type="primary", use_container_width=True):
         if not user_task.strip():
             st.warning("Please provide a task before running the workflow.")
         else:
             with st.spinner("Running Researcher -> Summarizer -> Planner -> Communicator..."):
                 try:
                     orchestrator = VoxCPMOrchestrator(config_path="config.yaml")
-                    result = orchestrator.run(task=user_task.strip())
-                    st.session_state["last_result"] = result
+                    st.session_state["last_result"] = orchestrator.run(task=user_task.strip())
                 except Exception as exc:
                     st.error(f"Pipeline failed: {exc}")
                 else:
-                    st.success(f"Completed using backend: {result.backend}")
+                    st.success(f"Completed using backend: {st.session_state['last_result'].backend}")
 
     result = st.session_state.get("last_result")
     if result:
@@ -265,11 +284,12 @@ with tab_speech:
                 st.error(f"Unexpected TTS error: {exc}")
             else:
                 out_audio_path = Path(tts_result["audio_path"])
+                audio_bytes = out_audio_path.read_bytes()
                 st.success("Speech generated successfully.")
-                st.audio(out_audio_path.read_bytes(), format="audio/wav")
+                st.audio(audio_bytes, format="audio/wav")
                 st.download_button(
                     label="Download WAV",
-                    data=out_audio_path.read_bytes(),
+                    data=audio_bytes,
                     file_name=out_audio_path.name,
                     mime="audio/wav",
                 )
@@ -288,8 +308,10 @@ with tab_artifacts:
     output_dir = Path("outputs")
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    recent_outputs = sorted(output_dir.glob("*.md"), key=lambda p: p.stat().st_mtime, reverse=True)[:10]
-    speech_outputs = sorted((output_dir / "speech").glob("*.wav"), key=lambda p: p.stat().st_mtime, reverse=True)[:10]
+    recent_outputs = sorted(output_dir.glob("*.md"), key=lambda item: item.stat().st_mtime, reverse=True)[:10]
+    speech_dir = output_dir / "speech"
+    speech_dir.mkdir(parents=True, exist_ok=True)
+    speech_outputs = sorted(speech_dir.glob("*.wav"), key=lambda item: item.stat().st_mtime, reverse=True)[:10]
 
     st.markdown("### Latest Markdown Outputs")
     if not recent_outputs:
@@ -314,8 +336,24 @@ with tab_artifacts:
                 st.json(json.loads(lines[-1]))
             except Exception:
                 st.code(lines[-1])
+        else:
+            st.info("Run log is empty.")
     else:
         st.info("Run log not found yet.")
+
+    st.markdown("### Latest Workspace Smoke Test")
+    smoke_test_result = st.session_state.get("smoke_test_result")
+    smoke_test_path = Path("docs/snapshots/09_ui_smoke_test.json")
+    if smoke_test_result is None and smoke_test_path.exists():
+        try:
+            smoke_test_result = json.loads(smoke_test_path.read_text(encoding="utf-8"))
+        except Exception:
+            smoke_test_result = None
+
+    if smoke_test_result is None:
+        st.info("No UI-triggered smoke test snapshot found yet.")
+    else:
+        st.json(smoke_test_result)
 
 st.divider()
 st.caption("Tip: keep Ollama running with `ollama serve`. For speech support, install VoxCPM + FunASR dependencies.")
