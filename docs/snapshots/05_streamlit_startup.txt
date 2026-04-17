@@ -1,7 +1,7 @@
-streamlit run app.py --server.headless true --server.port 8511
+streamlit run app.py --server.headless true --server.port 8513
 
 You can now view your Streamlit app in your browser.
 
-Local URL: http://localhost:8511
-Network URL: http://192.168.29.230:8511
-External URL: http://172.225.218.39:8511
+Local URL: http://localhost:8513
+Network URL: http://192.168.29.230:8513
+External URL: http://172.225.218.39:8513

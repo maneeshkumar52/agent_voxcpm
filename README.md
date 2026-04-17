@@ -1,80 +1,71 @@
-# VoxCPM + Ollama Multi-Agent Wiki Orchestrator
+# VoxCPM + Ollama Multi-Agent and Speech Workspace
 
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/)
 [![Streamlit](https://img.shields.io/badge/UI-Streamlit-red.svg)](https://streamlit.io/)
 [![Ollama](https://img.shields.io/badge/LLM-Ollama-black.svg)](https://ollama.com/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](#license)
+[![VoxCPM](https://img.shields.io/badge/Speech-VoxCPM%20%2B%20FunASR-teal.svg)](https://github.com/OpenBMB/VoxCPM)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-Production-ready multi-agent system that runs locally with Ollama models and orchestrates specialized agents through a VoxCPM-compatible orchestration layer.
+Production-ready local AI system where specialized agents collaborate on knowledge tasks and speech workflows. The project now includes:
+
+- Multi-agent orchestration for content generation
+- VoxCPM multilingual TTS
+- FunASR (SenseVoice) multilingual STT
+- Streamlit workspace with orchestration, speech studio, and artifacts
 
 ## Table of Contents
 
-- [Overview](#overview)
-- [Business Use Case](#business-use-case)
-- [Core Capabilities](#core-capabilities)
+- [What Is Included](#what-is-included)
 - [Architecture](#architecture)
 - [Project Structure](#project-structure)
-- [Quickstart](#quickstart)
-- [Functional Flows (Post Setup)](#functional-flows-post-setup)
-- [Execution Snapshots](#execution-snapshots)
+- [Setup](#setup)
+- [Run](#run)
+- [Functional Flows](#functional-flows)
+- [End-to-End Validation](#end-to-end-validation)
+- [Snapshots](#snapshots)
 - [Configuration](#configuration)
-- [Operational Notes](#operational-notes)
 - [Troubleshooting](#troubleshooting)
 - [Roadmap](#roadmap)
 - [License](#license)
 
-## Overview
+## What Is Included
 
-This solution demonstrates a practical AI collaboration workflow where four specialized agents cooperate to produce high-quality wiki content from a single user prompt.
+### Multi-Agent Pipeline
 
-Agents and responsibilities:
+- Researcher gathers context from local docs and external context hooks.
+- Summarizer condenses findings into concise insights.
+- Planner structures output into actionable sections.
+- Communicator produces final wiki-ready markdown.
 
-- Researcher: collects and structures evidence from local docs and optional API context.
-- Summarizer: compresses research into concise, high-signal synthesis.
-- Planner: converts synthesis into an actionable content structure.
-- Communicator: composes polished final markdown output for delivery.
+### Speech Capabilities
 
-The implementation is designed for local-first execution, reproducibility, and production-readiness:
-
-- Config-driven behavior (models, temperatures, storage paths)
-- Deterministic orchestration handoffs
-- Durable run logs and output artifacts
-- Dockerized deployment path
-
-## Business Use Case
-
-Enable knowledge teams, architects, and analysts to turn raw prompts into structured wiki artifacts with transparent multi-agent traceability.
-
-Example prompt:
-
-Create a wiki page on renewable energy with key technologies, grid challenges, policy trends, and future outlook.
-
-## Core Capabilities
-
-- Local LLM execution with Ollama (`llama3`, `mistral`, `gemma3:4b`)
-- VoxCPM-compatible orchestration with local fallback
-- Streamlit UI for interactive orchestration and trace visualization
-- Timestamped markdown output generation
-- JSONL audit logs for every run
-- Sample tasks for quick demo and onboarding
+- TTS: VoxCPM model (`openbmb/VoxCPM2`) for multilingual speech generation.
+- STT: FunASR SenseVoice (`iic/SenseVoiceSmall`) for multilingual transcription.
+- Speech output persistence in `outputs/speech/*.wav`.
 
 ## Architecture
 
 ```text
-User Input (Streamlit)
+User (Streamlit Workspace)
         |
-        v
-VoxCPM Orchestrator (or local fallback)
+        +--> Multi-Agent Orchestrator
+        |       |
+        |       +--> Researcher -> Summarizer -> Planner -> Communicator -> Markdown Output
+        |                                                   |
+        |                                                   +--> outputs/*.md
+        |                                                   +--> outputs/agent_logs.jsonl
         |
-        +--> Researcher --> Summarizer --> Planner --> Communicator
-                                                      |
-                                                      +--> Final Wiki Markdown
-                                                              |
-                                                              +--> outputs/*.md
-                                                              +--> outputs/agent_logs.jsonl
-        |
-        v
-Ollama Local Models (llama3 / mistral / gemma3:4b)
+        +--> Speech Studio
+                |
+                +--> VoxCPM TTS (text -> wav)
+                +--> FunASR STT (audio -> text)
+                |
+                +--> outputs/speech/*.wav
+
+Backends:
+- Ollama for agent reasoning models
+- VoxCPM for multilingual TTS
+- FunASR SenseVoice for multilingual STT
 ```
 
 ## Project Structure
@@ -83,166 +74,167 @@ Ollama Local Models (llama3 / mistral / gemma3:4b)
 agent_voxcpm/
 ├── app.py
 ├── orchestrator.py
+├── speech.py
 ├── ollama_client.py
 ├── utils.py
 ├── config.yaml
 ├── requirements.txt
 ├── Dockerfile
 ├── README.md
+├── scripts/
+│   └── e2e_validate.py
 ├── agents/
 │   ├── researcher.py
 │   ├── summarizer.py
 │   ├── planner.py
 │   └── communicator.py
 ├── sample_tasks/
-│   ├── renewable_energy.txt
-│   └── company_strategy.md
 ├── outputs/
 └── docs/
     └── snapshots/
 ```
 
-## Quickstart
+## Setup
 
 ### Prerequisites
 
 1. Python 3.11+
 2. Ollama installed locally
-3. Models available locally (`llama3`, `mistral`, `gemma3:4b`)
-4. Optional VoxCPM installation from source
+3. Homebrew ffmpeg (required for FunASR audio decoding on macOS)
+4. Recommended local Ollama models: `llama3`, `mistral`, `gemma3:4b`
 
-### Setup
+### Install
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 pip install git+https://github.com/OpenBMB/VoxCPM.git
+brew install ffmpeg
+```
+
+### Ollama Models
+
+```bash
 ollama serve
 ollama pull llama3
 ollama pull mistral
 ollama pull gemma3:4b
+```
+
+## Run
+
+### Streamlit Workspace
+
+```bash
 streamlit run app.py
 ```
 
-### Programmatic Run
+### Programmatic E2E Validation
 
 ```bash
-python - <<'PY'
-from orchestrator import VoxCPMOrchestrator
-
-task = "Create a professional wiki page on renewable energy covering technologies, grid challenges, policy trends, and outlook to 2035."
-result = VoxCPMOrchestrator("config.yaml").run(task)
-print("BACKEND:", result.backend)
-print("OUTPUT:", result.output_file)
-print("MESSAGES:", len(result.messages))
-PY
+python scripts/e2e_validate.py --speech-text "Hello world. This is VoxCPM multilingual speech verification." --language auto
 ```
 
-## Functional Flows (Post Setup)
+## Functional Flows
 
-### Flow A: Interactive Streamlit Flow
+### Flow A: Multi-Agent Wiki Generation
 
-1. User enters task in UI.
-2. Orchestrator forwards prompt to Researcher.
-3. Researcher sends notes to Summarizer.
-4. Summarizer sends synthesis to Planner.
-5. Planner sends structured plan to Communicator.
-6. Communicator returns final wiki markdown.
-7. UI renders full trace and output.
-8. System persists markdown and JSONL log.
+1. User enters task in `Multi-Agent Orchestrator` tab.
+2. Researcher -> Summarizer -> Planner -> Communicator handoff chain executes.
+3. Final markdown appears in UI.
+4. Artifacts are persisted to `outputs/` and `outputs/agent_logs.jsonl`.
 
-### Flow B: Headless Orchestrator Flow
+### Flow B: Speech Studio
 
-1. Instantiate orchestrator from `config.yaml`.
-2. Resolve backend mode (`voxcpm` or `local-fallback`).
-3. Execute deterministic handoff chain.
-4. Save timestamped markdown to `outputs/`.
-5. Append full run trace to `outputs/agent_logs.jsonl`.
+1. User uploads audio in `Speech Studio` and runs STT.
+2. Transcript is produced via SenseVoice and can be reused as TTS input.
+3. User enters/edits text and generates multilingual speech with VoxCPM.
+4. WAV output is playable and downloadable in the UI.
 
-## Execution Snapshots
+### Flow C: Unified Validation
 
-The following artifacts were captured from live execution on April 18, 2026.
+1. `scripts/e2e_validate.py` runs orchestration.
+2. Script runs VoxCPM TTS.
+3. Script runs FunASR STT on generated WAV.
+4. Summary is persisted in `docs/snapshots/08_e2e_speech_validation.json`.
 
-### Snapshot Index
+## End-to-End Validation
+
+Last validated with real dependency execution:
+
+- Orchestrator backend: `voxcpm`
+- Message handoffs: `5`
+- TTS: `ok` with generated 48kHz WAV
+- STT: `ok` with transcribed output
+
+Validation artifact:
+
+- [docs/snapshots/08_e2e_speech_validation.json](docs/snapshots/08_e2e_speech_validation.json)
+
+## Snapshots
 
 - Ollama model inventory: [docs/snapshots/01_ollama_tags.json](docs/snapshots/01_ollama_tags.json)
 - Python compile validation: [docs/snapshots/02_compileall.txt](docs/snapshots/02_compileall.txt)
-- E2E run summary: [docs/snapshots/03_e2e_run_summary.json](docs/snapshots/03_e2e_run_summary.json)
-- Final output preview: [docs/snapshots/04_e2e_output_preview.md](docs/snapshots/04_e2e_output_preview.md)
-- Streamlit startup snapshot: [docs/snapshots/05_streamlit_startup.txt](docs/snapshots/05_streamlit_startup.txt)
-- Latest agent log record: [docs/snapshots/06_agent_log_last_run.json](docs/snapshots/06_agent_log_last_run.json)
-- Streamlit UI screenshot: [docs/snapshots/07_streamlit_ui.png](docs/snapshots/07_streamlit_ui.png)
+- Orchestrator run summary: [docs/snapshots/03_e2e_run_summary.json](docs/snapshots/03_e2e_run_summary.json)
+- Output preview: [docs/snapshots/04_e2e_output_preview.md](docs/snapshots/04_e2e_output_preview.md)
+- Streamlit startup log: [docs/snapshots/05_streamlit_startup.txt](docs/snapshots/05_streamlit_startup.txt)
+- Agent log sample: [docs/snapshots/06_agent_log_last_run.json](docs/snapshots/06_agent_log_last_run.json)
+- Updated UI screenshot: [docs/snapshots/07_streamlit_ui.png](docs/snapshots/07_streamlit_ui.png)
+- Speech-enabled e2e summary: [docs/snapshots/08_e2e_speech_validation.json](docs/snapshots/08_e2e_speech_validation.json)
 
-### UI Snapshot
-
-![Streamlit Multi-Agent UI](docs/snapshots/07_streamlit_ui.png)
-
-### Validation Checklist
-
-1. `curl http://localhost:11434/api/tags` returns installed models.
-2. `python -m compileall .` completes without syntax errors.
-3. `streamlit run app.py` starts and exposes local URL.
-4. One task run generates markdown output and JSONL run log.
-5. Agent trace order appears as User -> Researcher -> Summarizer -> Planner -> Communicator -> User.
+![Workspace UI](docs/snapshots/07_streamlit_ui.png)
 
 ## Configuration
 
-All runtime controls are centralized in `config.yaml`:
+Main runtime settings are in `config.yaml`.
 
-- Ollama endpoint and timeout
-- Per-agent model assignment
-- Per-agent temperature and system prompt
-- Output and logging storage paths
-
-## Operational Notes
-
-### Reliability
-
-- VoxCPM package is auto-detected at runtime.
-- If unavailable, execution falls back to local orchestration.
-- Every run is auditable through JSONL logs.
-
-### Docker
-
-```bash
-docker build -t voxcpm-multi-agent .
-docker run --rm -p 8501:8501 -v "$(pwd)/outputs:/app/outputs" voxcpm-multi-agent
-```
-
-Note: Ensure Ollama is reachable from container networking.
-
-### Security
-
-- Keep local deployment in trusted network boundaries.
-- Avoid passing secrets in prompts or local source docs.
-- Add authentication before public exposure of Streamlit.
+- `ollama`: local LLM endpoint and timeout
+- `agents`: model, temperature, prompts per agent
+- `storage`: markdown and log output locations
+- `speech`:
+  - `voxcpm_model_id`
+  - `asr_model_id`
+  - `speech_output_dir`
+  - `enable_tts`, `enable_stt`
+  - synthesis defaults (`tts_cfg_value`, `tts_inference_timesteps`)
 
 ## Troubleshooting
 
-### Ollama Unreachable
+### STT fails with ffmpeg error
 
-- Start service with `ollama serve`
-- Verify endpoint in `config.yaml`
-- Check tags endpoint with `curl http://localhost:11434/api/tags`
+Install ffmpeg:
 
-### Missing Models
+```bash
+brew install ffmpeg
+```
 
-- Pull required models via `ollama pull <model>`
-- Ensure names match `config.yaml`
+### VoxCPM model download is slow
 
-### VoxCPM Missing
+Set `HF_TOKEN` for faster and higher-limit Hugging Face downloads.
 
-- Install from source: `pip install git+https://github.com/OpenBMB/VoxCPM.git`
-- Confirm backend mode in run metadata
+### Backend shows `local-fallback`
+
+Install VoxCPM package and restart run.
+
+```bash
+pip install git+https://github.com/OpenBMB/VoxCPM.git
+```
+
+### Ollama connection errors
+
+```bash
+ollama serve
+curl http://localhost:11434/api/tags
+```
 
 ## Roadmap
 
-1. Parallel branch orchestration for higher throughput
-2. Evaluation metrics and quality scoring per run
-3. Human approval gates before final publish
-4. Optional vector retrieval for larger corpora
+1. Parallel agent graph execution
+2. Structured evaluation metrics per run
+3. Human approval checkpoint before final publish
+4. Optional RAG connector for larger corpora
 
 ## License
 
-MIT
+MIT (see [LICENSE](LICENSE)).

@@ -27,3 +27,14 @@ agents:
 storage:
   output_dir: "outputs"
   log_file: "outputs/agent_logs.jsonl"
+
+speech:
+  enabled: true
+  enable_tts: true
+  enable_stt: true
+  voxcpm_model_id: "openbmb/VoxCPM2"
+  asr_model_id: "iic/SenseVoiceSmall"
+  speech_output_dir: "outputs/speech"
+  default_language: "auto"
+  tts_cfg_value: 2.0
+  tts_inference_timesteps: 10
