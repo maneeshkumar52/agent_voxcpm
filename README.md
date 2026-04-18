@@ -105,20 +105,46 @@ agent_voxcpm/
 
 ### Prerequisites
 
-1. Python 3.11+
-2. Ollama installed locally
-3. Homebrew ffmpeg (required for FunASR audio decoding on macOS)
-4. Recommended local Ollama models: `llama3`, `mistral`, `gemma3:4b`
+| Requirement | macOS | Windows |
+|-------------|-------|---------|
+| Python | 3.11+ ([python.org](https://www.python.org/) or `brew install python@3.11`) | 3.11+ ([python.org](https://www.python.org/) — check *Add to PATH* during install) |
+| Ollama | [ollama.com](https://ollama.com/) or `brew install ollama` | [ollama.com](https://ollama.com/) (Windows installer) |
+| ffmpeg | `brew install ffmpeg` | `winget install ffmpeg` or download from [ffmpeg.org](https://ffmpeg.org/download.html) and add to PATH |
+| Git | Pre-installed or `brew install git` | [git-scm.com](https://git-scm.com/download/win) |
 
 ### Install
 
+#### macOS
+
 ```bash
-python -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 pip install git+https://github.com/OpenBMB/VoxCPM.git
 brew install ffmpeg
 ```
+
+#### Windows (PowerShell)
+
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+pip install git+https://github.com/OpenBMB/VoxCPM.git
+winget install ffmpeg
+```
+
+> **Note:** On Windows, if `winget` is unavailable, download ffmpeg from [ffmpeg.org](https://ffmpeg.org/download.html), extract, and add the `bin` folder to your system PATH.
+
+#### Platform-Specific Notes
+
+| Difference | macOS | Windows |
+|------------|-------|---------|
+| Virtual env activation | `source .venv/bin/activate` | `.venv\Scripts\Activate.ps1` (PowerShell) or `.venv\Scripts\activate.bat` (CMD) |
+| ffmpeg install | `brew install ffmpeg` | `winget install ffmpeg` or manual download |
+| VoxCPM / PyTorch | Works out of the box on Apple Silicon (MPS) and Intel | CPU-only by default; for GPU add `--index-url https://download.pytorch.org/whl/cu121` when installing torch |
+| soundfile backend | Uses system libsndfile (installed with Homebrew) | Bundled with the `soundfile` pip package — no extra step |
+| Ollama | `brew install ollama` or download from website | Windows installer from [ollama.com](https://ollama.com/) |
 
 ### Ollama Models
 
