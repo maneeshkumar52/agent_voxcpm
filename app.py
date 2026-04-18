@@ -502,9 +502,14 @@ button[data-baseweb="tab"] {
 }
 
 button[data-baseweb="tab"][aria-selected="true"] {
-    background: #0e3340 !important;
-    border-color: #0e3340 !important;
+    background: #0f9ba5 !important;
+    border-color: #0f9ba5 !important;
     color: #ffffff !important;
+}
+
+button[data-baseweb="tab"][aria-selected="true"]:focus {
+    outline: none !important;
+    box-shadow: none !important;
 }
 
 .stButton button,
@@ -516,14 +521,16 @@ button[data-baseweb="tab"][aria-selected="true"] {
     color: #1a3a4a !important;
 }
 
-.stButton button[kind="primary"] {
-    background: #0e3340 !important;
+.stButton button[kind="primary"],
+.stApp .stButton button[kind="primary"] {
+    background: linear-gradient(135deg, #0f9ba5, #0db5a4) !important;
     color: #ffffff !important;
-    border: 0;
+    border: 0 !important;
 }
 
-.stButton button[kind="primary"]:hover {
-    background: #164a5c !important;
+.stButton button[kind="primary"]:hover,
+.stApp .stButton button[kind="primary"]:hover {
+    background: linear-gradient(135deg, #0d8a93, #0a9e90) !important;
 }
 
 /* Text inputs, number inputs, and all form controls */
@@ -574,9 +581,11 @@ hr {
     color: #0a1e2a !important;
 }
 
-/* Tab highlight bar */
-[data-baseweb="tab-highlight"] {
+/* Tab highlight bar — hide the default dark underline */
+[data-baseweb="tab-highlight"],
+[data-baseweb="tab-border"] {
     background-color: transparent !important;
+    display: none !important;
 }
 </style>
 """,
