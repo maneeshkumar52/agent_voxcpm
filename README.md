@@ -19,6 +19,14 @@ Production-ready local AI system where specialized agents collaborate on knowled
 - [Architecture](#architecture)
 - [Project Structure](#project-structure)
 - [Setup](#setup)
+  - [Step 1 — Install Prerequisites](#step-1--install-prerequisites)
+  - [Step 2 — Clone the Repository](#step-2--clone-the-repository)
+  - [Step 3 — Create a Virtual Environment and Install Dependencies](#step-3--create-a-virtual-environment-and-install-dependencies)
+  - [Step 4 — Install VoxCPM](#step-4--install-voxcpm-speech-synthesis)
+  - [Step 5 — Pull Ollama Models](#step-5--pull-ollama-models)
+  - [Step 6 — Launch the Workspace](#step-6--launch-the-workspace)
+  - [Step 7 — Verify Everything Works](#step-7--verify-everything-works-smoke-test)
+  - [Quick Reference: All Commands](#quick-reference-all-commands-in-one-place)
 - [Run](#run)
 - [Step-by-Step Walkthrough](#step-by-step-walkthrough)
   - [Walkthrough 1 — Environment Setup](#walkthrough-1--environment-setup-and-readiness-check)
@@ -103,25 +111,92 @@ agent_voxcpm/
 
 ## Setup
 
-### Prerequisites
+> **New here?** Follow each numbered step in order. Do not skip ahead. Each step tells you exactly what to type and what you should see before moving on.
 
-| Requirement | macOS | Windows |
-|-------------|-------|---------|
-| Python | 3.11+ ([python.org](https://www.python.org/) or `brew install python@3.11`) | 3.11+ ([python.org](https://www.python.org/) — check *Add to PATH* during install) |
-| Ollama | [ollama.com](https://ollama.com/) or `brew install ollama` | [ollama.com](https://ollama.com/) (Windows installer) |
-| ffmpeg | `brew install ffmpeg` | `winget install ffmpeg` or download from [ffmpeg.org](https://ffmpeg.org/download.html) and add to PATH |
-| Git | Pre-installed or `brew install git` | [git-scm.com](https://git-scm.com/download/win) |
+---
 
-### Install
+### Step 1 — Install Prerequisites
 
-#### macOS
+You need four things installed before you start. Open a terminal and check each one.
+
+#### 1a. Python 3.11+
+
+Check if Python is already installed:
 
 ```bash
-python -m venv .venv
+python3 --version
+```
+
+You should see `Python 3.11.x` or higher. If not:
+
+| macOS | Windows |
+|-------|---------|
+| `brew install python@3.11` (requires [Homebrew](https://brew.sh/)) | Download from [python.org](https://www.python.org/downloads/). **Check "Add Python to PATH"** during installation. |
+
+#### 1b. Git
+
+Check:
+
+```bash
+git --version
+```
+
+If missing:
+
+| macOS | Windows |
+|-------|---------|
+| Pre-installed on most Macs. If missing: `brew install git` | Download from [git-scm.com](https://git-scm.com/download/win) |
+
+#### 1c. ffmpeg (required for audio/speech features)
+
+Check:
+
+```bash
+ffmpeg -version
+```
+
+If missing:
+
+| macOS | Windows |
+|-------|---------|
+| `brew install ffmpeg` | `winget install ffmpeg` — or download from [ffmpeg.org](https://ffmpeg.org/download.html), extract it, and add the `bin` folder to your system PATH |
+
+#### 1d. Ollama (local LLM server)
+
+Check:
+
+```bash
+ollama --version
+```
+
+If missing:
+
+| macOS | Windows |
+|-------|---------|
+| `brew install ollama` or download from [ollama.com](https://ollama.com/) | Download the Windows installer from [ollama.com](https://ollama.com/) |
+
+---
+
+### Step 2 — Clone the Repository
+
+```bash
+git clone https://github.com/maneeshkumar52/agent_voxcpm.git
+cd agent_voxcpm
+```
+
+You should now be inside the `agent_voxcpm` folder.
+
+---
+
+### Step 3 — Create a Virtual Environment and Install Dependencies
+
+#### macOS / Linux
+
+```bash
+python3 -m venv .venv
 source .venv/bin/activate
+pip install --upgrade pip
 pip install -r requirements.txt
-pip install git+https://github.com/OpenBMB/VoxCPM.git
-brew install ffmpeg
 ```
 
 #### Windows (PowerShell)
@@ -129,31 +204,156 @@ brew install ffmpeg
 ```powershell
 python -m venv .venv
 .venv\Scripts\Activate.ps1
+pip install --upgrade pip
 pip install -r requirements.txt
-pip install git+https://github.com/OpenBMB/VoxCPM.git
-winget install ffmpeg
 ```
 
-> **Note:** On Windows, if `winget` is unavailable, download ffmpeg from [ffmpeg.org](https://ffmpeg.org/download.html), extract, and add the `bin` folder to your system PATH.
+> **How to confirm it worked:** Your terminal prompt should now show `(.venv)` at the beginning. Run `pip list | grep streamlit` (macOS) or `pip list | findstr streamlit` (Windows) — you should see `streamlit` in the output.
 
-#### Platform-Specific Notes
+---
 
-| Difference | macOS | Windows |
-|------------|-------|---------|
+### Step 4 — Install VoxCPM (Speech Synthesis)
+
+This installs the VoxCPM text-to-speech model from source:
+
+```bash
+pip install git+https://github.com/OpenBMB/VoxCPM.git
+```
+
+> **This will take a few minutes.** It downloads PyTorch and the VoxCPM package. On a slow connection, be patient.
+>
+> **Windows GPU users:** If you have an NVIDIA GPU and want faster inference, install PyTorch with CUDA first:
+> ```bash
+> pip install torch --index-url https://download.pytorch.org/whl/cu121
+> ```
+> Then run the VoxCPM install command above.
+
+**Verify it installed:**
+
+```bash
+python -c "import voxcpm; print('VoxCPM OK')"
+```
+
+You should see `VoxCPM OK`. If you get an error, re-run the pip install command.
+
+---
+
+### Step 5 — Pull Ollama Models
+
+The workspace uses three LLM models. Start the Ollama server first, then pull each model.
+
+**Terminal 1 — start the server (keep this running):**
+
+```bash
+ollama serve
+```
+
+**Terminal 2 — pull models (open a new terminal tab/window):**
+
+```bash
+ollama pull llama3
+ollama pull mistral
+ollama pull gemma3:4b
+```
+
+Each model is a few GB. Wait for each one to finish before pulling the next.
+
+**Verify all models are available:**
+
+```bash
+curl http://localhost:11434/api/tags
+```
+
+You should see JSON output listing `llama3`, `mistral`, and `gemma3:4b`.
+
+> **Keep `ollama serve` running** in Terminal 1 for as long as you use the workspace.
+
+---
+
+### Step 6 — Launch the Workspace
+
+Make sure your virtual environment is active (you see `(.venv)` in your prompt), then:
+
+```bash
+streamlit run app.py
+```
+
+Streamlit will print something like:
+
+```
+  Local URL: http://localhost:8501
+  Network URL: http://192.168.x.x:8501
+```
+
+**Open http://localhost:8501 in your browser.**
+
+You should see:
+- A dark hero banner at the top
+- Four metric cards (Agent Backend, Run History, Speech Assets, Snapshots)
+- Four tabs: Command Center, Agent Studio, Speech Lab, Operations and Snapshots
+- Sidebar showing **VoxCPM: Ready**, **FunASR: Ready**, **soundfile: Ready**
+
+> **Troubleshooting — sidebar shows "Missing":**
+> This means Streamlit is running with a different Python than where you installed the packages. Fix it by running:
+> ```bash
+> python -m streamlit run app.py
+> ```
+> This forces Streamlit to use the same Python where your packages are installed.
+
+---
+
+### Step 7 — Verify Everything Works (Smoke Test)
+
+Once the UI is open in your browser:
+
+1. Look at the **sidebar** on the left
+2. Click the **"Run full workspace smoke test"** button
+3. Wait for it to complete (this runs the full agent pipeline + TTS + STT)
+4. Switch to the **Command Center** tab — the "Latest Validation Snapshot" section should show a JSON result with `"status": "ok"` for each component
+
+If everything passes, your setup is complete.
+
+---
+
+### Quick Reference: All Commands in One Place
+
+```bash
+# 1. Clone
+git clone https://github.com/maneeshkumar52/agent_voxcpm.git && cd agent_voxcpm
+
+# 2. Virtual env (macOS/Linux)
+python3 -m venv .venv && source .venv/bin/activate
+
+# 2. Virtual env (Windows PowerShell)
+# python -m venv .venv; .venv\Scripts\Activate.ps1
+
+# 3. Install dependencies
+pip install --upgrade pip
+pip install -r requirements.txt
+pip install git+https://github.com/OpenBMB/VoxCPM.git
+
+# 4. Install ffmpeg (macOS)
+brew install ffmpeg
+# Windows: winget install ffmpeg
+
+# 5. Pull LLM models (keep 'ollama serve' running in another terminal)
+ollama pull llama3 && ollama pull mistral && ollama pull gemma3:4b
+
+# 6. Launch
+streamlit run app.py
+```
+
+### Platform-Specific Notes
+
+| Topic | macOS | Windows |
+|-------|-------|---------|
 | Virtual env activation | `source .venv/bin/activate` | `.venv\Scripts\Activate.ps1` (PowerShell) or `.venv\Scripts\activate.bat` (CMD) |
 | ffmpeg install | `brew install ffmpeg` | `winget install ffmpeg` or manual download |
 | VoxCPM / PyTorch | Works out of the box on Apple Silicon (MPS) and Intel | CPU-only by default; for GPU add `--index-url https://download.pytorch.org/whl/cu121` when installing torch |
 | soundfile backend | Uses system libsndfile (installed with Homebrew) | Bundled with the `soundfile` pip package — no extra step |
 | Ollama | `brew install ollama` or download from website | Windows installer from [ollama.com](https://ollama.com/) |
 
-### Ollama Models
-
-```bash
-ollama serve
-ollama pull llama3
-ollama pull mistral
-ollama pull gemma3:4b
-```
+---
 
 ## Run
 
